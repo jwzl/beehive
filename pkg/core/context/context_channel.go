@@ -19,9 +19,10 @@ const (
 
 // ChannelContext is object for Context channel
 type ChannelContext struct {
-	//ConfigFactory goarchaius.ConfigurationFactory
+	//channels is for module channel.
 	channels     map[string]chan interface{}
 	chsLock      sync.RWMutex
+	//typeChannels is for module group.
 	typeChannels map[string]map[string]chan interface{}
 	typeChsLock  sync.RWMutex
 }
@@ -31,6 +32,7 @@ type ChannelContext struct {
 func NewChannelContext() *ChannelContext {
 	channelMap := make(map[string]chan interface{})
 	moduleChannels := make(map[string]map[string]chan interface{})
+
 	return &ChannelContext{
 		channels:     channelMap,
 		typeChannels: moduleChannels,
@@ -73,6 +75,35 @@ func (ctx *ChannelContext) Receive(module string) (interface{}, error) {
 
 	klog.Warningf("Failed to get channel for module:%s when receive message", module)
 	return nil, fmt.Errorf("failed to get channel for module(%s)", module)
+}
+
+// SendToGroup send msg to modules. Todo: do not stuck
+func (ctx *ChannelContext) SendToGroup(moduleType string, message interface{}) {
+	// avoid exception because of channel closing
+	// TODO: need reconstruction
+	defer func() {
+		if exception := recover(); exception != nil {
+			klog.Warningf("Recover when sendToGroup message, exception: %+v", exception)
+		}
+	}()
+
+	send := func(ch chan interface{}) {
+		select {
+		case ch <- message:
+		default:
+			klog.Warningf("the message channel is full, message: %+v", message)
+			select {
+			case ch <- message:
+			}
+		}
+	}
+	if channelList := ctx.getTypeChannel(moduleType); channelList != nil {
+		for _, channel := range channelList {
+			go send(channel)
+		}
+		return
+	}
+	klog.Warningf("Get bad module type:%s when sendToGroup message, do nothing", moduleType)
 }
 
 // New Channel

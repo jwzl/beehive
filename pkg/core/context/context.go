@@ -1,5 +1,9 @@
 package context
 
+import (
+	gocontext "context"
+)
+
 //ModuleContext is interface for context module management
 type ModuleContext interface {
 	AddModule(module string)
@@ -12,10 +16,15 @@ type MessageContext interface {
 	// async mode
 	Send(module string, message interface{})
 	Receive(module string) (interface{}, error)
+	// group broadcast
+	SendToGroup(moduleType string, message interface{})
 }
 
-// Context is global context object
-type Context struct {
+// coreContext is global context object
+type coreContext struct {
 	moduleContext  ModuleContext
 	messageContext MessageContext
+	//for golang native context.
+	ctx            gocontext.Context
+	cancel         gocontext.CancelFunc
 }

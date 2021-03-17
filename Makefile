@@ -15,7 +15,7 @@
 #
 
 
-PKG=github.com/kubeedge/beehive
+PKG=github.com/jwzl/beehive
 
 # Project packages.
 PACKAGES=$(shell go list ./... | grep -v "/vendor/")

@@ -1,7 +1,9 @@
 package context
 
 import (
+	gocontext "context"
 	"sync"
+
 	"k8s.io/klog"
 )
 
@@ -12,14 +14,18 @@ const (
 
 var (
 	// singleton
-	context *Context
+	context *coreContext
 	once    sync.Once
 )
 
-// GetContext gets global context instance
-func GetContext(contextType string) *Context {
+// InitContext init global context instance
+func InitContext(contextType string){
 	once.Do(func() {
-		context = &Context{}
+		ctx, cancel := gocontext.WithCancel(gocontext.Background())
+		context = &coreContext{
+			ctx:    ctx,
+			cancel: cancel,
+		}
 		switch contextType {
 		case MsgCtxTypeChannel:
 			channelContext := NewChannelContext()
@@ -29,36 +35,53 @@ func GetContext(contextType string) *Context {
 			klog.Warningf("Do not support context type:%s", contextType)
 		}
 	})
-	return context
+}
+
+func GetContext() gocontext.Context {
+	return context.ctx
+}
+
+func Done() <-chan struct{} {
+	return context.ctx.Done()
+}
+
+// Cancel gocontext function
+func Cancel() {
+	context.cancel()
 }
 
 // AddModule adds module into module context
-func (ctx *Context) AddModule(module string) {
-	ctx.moduleContext.AddModule(module)
+func AddModule(module string) {
+	context.moduleContext.AddModule(module)
 }
 
 // AddModuleGroup adds module into module context group
-func (ctx *Context) AddModuleGroup(module, group string) {
-	ctx.moduleContext.AddModuleGroup(module, group)
+func AddModuleGroup(module, group string) {
+	context.moduleContext.AddModuleGroup(module, group)
 }
 
 // Cleanup cleans up module
-func (ctx *Context) Cleanup(module string) {
-	ctx.moduleContext.Cleanup(module)
+func Cleanup(module string) {
+	context.moduleContext.Cleanup(module)
 }
 
 // Send the message
-func (ctx *Context) Send(module string, message interface{}) {
-	ctx.messageContext.Send(module, message)
+func Send(module string, message interface{}) {
+	context.messageContext.Send(module, message)
 }
 
 // Receive the message
 // module : local module name
-func (ctx *Context) Receive(module string) (interface{}, error) {
-	message, err := ctx.messageContext.Receive(module)
+func Receive(module string) (interface{}, error) {
+	message, err := context.messageContext.Receive(module)
 	if err == nil {
 		return message, nil
 	}
 	klog.Warning("Receive: failed to receive message")
 	return message, err
+}
+
+// SendToGroup broadcasts the message to all of group members
+func SendToGroup(moduleType string, message interface{}) {
+	context.messageContext.SendToGroup(moduleType, message)
 }

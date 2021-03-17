@@ -50,3 +50,8 @@ func (ctx *UnixSocketContext) Send(module string, content interface{}) {
 func (ctx *UnixSocketContext) Receive(module string) interface{} {
 	return nil
 }
+
+// SendToGroup send msg to modules. Todo: do not stuck
+func (ctx *UnixSocketContext) SendToGroup(moduleType string, message interface{}) {
+
+}
