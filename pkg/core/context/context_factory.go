@@ -1,16 +1,27 @@
 package context
 
 import (
-	gocontext "context"
 	"sync"
+	"time"
+	gocontext "context"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
+	"github.com/jwzl/beehive/pkg/core/model"
 )
 
 //define channel type
 const (
 	MsgCtxTypeChannel = "channel"
 )
+
+// coreContext is global context object
+type coreContext struct {
+	moduleContext  ModuleContext
+	messageContext MessageContext
+	//for golang native context.
+	ctx            gocontext.Context
+	cancel         gocontext.CancelFunc
+}
 
 var (
 	// singleton
@@ -66,22 +77,39 @@ func Cleanup(module string) {
 }
 
 // Send the message
-func Send(module string, message interface{}) {
+func Send(module string, message *model.Message) {
 	context.messageContext.Send(module, message)
 }
 
 // Receive the message
 // module : local module name
-func Receive(module string) (interface{}, error) {
+func Receive(module string) (*model.Message, error) {
 	message, err := context.messageContext.Receive(module)
 	if err == nil {
 		return message, nil
 	}
-	klog.Warning("Receive: failed to receive message")
 	return message, err
 }
 
+// SendSync sends message in sync mode
+// module: the destination of the message
+// timeout: if <= 0 using default value(30s)
+func SendSync(module string,
+	message *model.Message, timeout time.Duration) (*model.Message, error) {
+	return context.messageContext.SendSync(module, message, timeout)
+}
+
+// SendResp sends response
+// please get resp message using model.NewRespByMessage
+func SendResp(resp *model.Message) {
+	context.messageContext.SendResp(resp)
+}
+
 // SendToGroup broadcasts the message to all of group members
-func SendToGroup(moduleType string, message interface{}) {
-	context.messageContext.SendToGroup(moduleType, message)
+func SendToGroup(group string, message *model.Message) {
+	context.messageContext.SendToGroup(group, message)
+}
+// SendToGroupSync broadcasts the message to all of group members in sync mode
+func SendToGroupSync(group string, message *model.Message, timeout time.Duration) error {
+	return context.messageContext.SendToGroupSync(group, message, timeout)
 }

@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	beehiveContext "github.com/jwzl/beehive/pkg/core/context"
 )

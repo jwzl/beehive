@@ -2,6 +2,9 @@ package context
 
 import (
 	"sync"
+	"time"
+
+	"github.com/jwzl/beehive/pkg/core/model"
 )
 
 // UnixSocketContext unixsocket struct
@@ -41,17 +44,28 @@ func (ctx *UnixSocketContext) Cleanup(module string) {
 }
 
 // Send async mode
-func (ctx *UnixSocketContext) Send(module string, content interface{}) {
+func (ctx *UnixSocketContext) Send(module string, content *model.Message) {
 
 }
 
 //Receive the message
 //local module name
-func (ctx *UnixSocketContext) Receive(module string) interface{} {
+func (ctx *UnixSocketContext) Receive(module string) *model.Message {
 	return nil
 }
 
-// SendToGroup send msg to modules. Todo: do not stuck
-func (ctx *UnixSocketContext) SendToGroup(moduleType string, message interface{}) {
+func (ctx *UnixSocketContext) SendSync(module string, message *model.Message, timeout time.Duration) (*model.Message, error){
+	return nil, nil
+}
 
+func (ctx *UnixSocketContext) SendResp(message *model.Message) {
+
+}
+// SendToGroup send msg to modules. Todo: do not stuck
+func (ctx *UnixSocketContext) SendToGroup(moduleType string, message *model.Message) {
+
+}
+
+func (ctx *UnixSocketContext) SendToGroupSync(moduleType string, message *model.Message, timeout time.Duration) error {
+	return nil
 }
