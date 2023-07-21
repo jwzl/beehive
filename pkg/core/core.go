@@ -21,7 +21,6 @@ func StartModules() {
 		//Assemble typeChannels for send2Group
 		beehiveContext.AddModuleGroup(name, module.Group())
 		go module.Start()
-		klog.Infof("Starting module %v", name)
 	}
 }
 
@@ -37,7 +36,6 @@ func GracefulShutdown() {
 		beehiveContext.Cancel()
 		modules := GetModules()
 		for name, _ := range modules {
-			klog.Infof("Cleanup module %v", name)
 			beehiveContext.Cleanup(name)
 		}
 	}

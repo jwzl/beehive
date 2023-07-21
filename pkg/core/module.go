@@ -1,8 +1,6 @@
 package core
 
-import (
-	"k8s.io/klog/v2"
-)
+import ()
 
 const (
 	tryReadKeyTimes = 5
@@ -31,10 +29,8 @@ func init() {
 func Register(m Module) {
 	if m.Enable() {
 		modules[m.Name()] = m
-		klog.Infof("Module %v registered successfully", m.Name())
 	} else {
 		disabledModules[m.Name()] = m
-		klog.Warningf("Module %v is disabled, do not register", m.Name())
 	}
 }
 
