@@ -74,7 +74,6 @@ func (ctx *ChannelContext) Send(module string, message *model.Message) {
 		channel <- message
 		return
 	}
-	klog.Warningf("Get bad module name :%s when send message, do nothing", module)
 }
 
 // Receive msg from channel of module
@@ -171,8 +170,6 @@ func (ctx *ChannelContext) SendResp(message *model.Message) {
 		}
 		return
 	}
-
-	klog.Warningf("Get bad anonName:%s when sendresp message, do nothing", anonName)
 }
 
 // SendToGroup send msg to modules. Todo: do not stuck
@@ -201,7 +198,6 @@ func (ctx *ChannelContext) SendToGroup(moduleType string, message *model.Message
 		}
 		return
 	}
-	klog.Warningf("Get bad module type:%s when sendToGroup message, do nothing", moduleType)
 }
 
 // SendToGroupSync : broadcast the message to echo module channel, the module send response back anon channel
@@ -394,5 +390,4 @@ func (ctx *ChannelContext) AddModuleGroup(module, group string) {
 		ctx.addTypeChannel(module, group, channel)
 		return
 	}
-	klog.Warningf("Get bad module name %s when addmodulegroup", module)
 }
